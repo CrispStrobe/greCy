@@ -2,31 +2,106 @@
 
 This is a fork of [Jacobo/greCy](https://github.com/Jacobo/greCy), which provides Ancient Greek models for spaCy.
 
-The installer in the original `grecy` package was seemingly broken: The `python -m grecy install <model_name>` command fails (probably because it points to outdated URLs on Hugging Face and fails to name the downloaded files correctly, causing `pip` to fail.) This fork provides a fixed, manual installation script.
+The installer in the original `grecy` package is broken. This fork provides fixed models, a robust installation script, and a [live Gradio demo](#-live-demo).
 
-## Installation
+---
 
-### 1. Create a Clean Virtual Environment
+## 🚀 Live Demo
 
-Install in a clean environment to avoid package conflicts, e.g. by using `conda`_
+You can test the `grc_proiel_trf` and other models live on our Hugging Face Space:
+
+**[https://huggingface.co/spaces/cstr/spacy_de](https://huggingface.co/spaces/cstr/spacy_de)**
+
+---
+
+## Installation (Recommended Method)
+
+This fork provides pre-packaged wheel (`.whl`) files for all models in a [GitHub Release](https://github.com/CrispStrobe/greCy/releases/tag/v1.0-models). This method allows you to install directly from a URL and **prevents dependency conflicts** caused by outdated packages.
+
+### Step 1: Install Modern Libraries
+
+First, install your main, modern libraries. All transformer (`_trf`) models require `spacy-transformers`.
+
+```bash
+pip install spacy>=3.7
+pip install spacy-transformers>=1.1.0
+````
+
+### Step 2: Install greCy Models
+
+Add the models you need to your `requirements.txt` file or `pip install` them from the command line.
+
+**You can add the `--no-deps` flag.** This tells `pip` to install *only* the model files and to **not** install its old, broken dependencies (like `transformers 4.25.1`), which else might break your environment.
+
+**Example `requirements.txt`:**
+
+```txt
+# 1. Install modern libraries
+spacy>=3.7
+spacy-transformers>=1.1.0
+
+# 2. Install greCy models, ignoring their dependencies
+#    Note: The filenames use underscores (e.g., grc_perseus_trf) to be valid.
+[https://github.com/CrispStrobe/greCy/releases/download/v1.0-models/grc_proiel_trf-3.7.5-py3-none-any.whl](https://github.com/CrispStrobe/greCy/releases/download/v1.0-models/grc_proiel_trf-3.7.5-py3-none-any.whl) --no-deps
+[https://github.com/CrispStrobe/greCy/releases/download/v1.0-models/grc_perseus_trf-0.0.0-py3-none-any.whl](https://github.com/CrispStrobe/greCy/releases/download/v1.0-models/grc_perseus_trf-0.0.0-py3-none-any.whl) --no-deps
+[https://github.com/CrispStrobe/greCy/releases/download/v1.0-models/grc_ner_trf-0.0.0-py3-none-any.whl](https://github.com/CrispStrobe/greCy/releases/download/v1.0-models/grc_ner_trf-0.0.0-py3-none-any.whl) --no-deps
+[https://github.com/CrispStrobe/greCy/releases/download/v1.0-models/grc_proiel_lg-0.0.0-py3-none-any.whl](https://github.com/CrispStrobe/greCy/releases/download/v1.0-models/grc_proiel_lg-0.0.0-py3-none-any.whl) --no-deps
+[https://github.com/CrispStrobe/greCy/releases/download/v1.0-models/grc_perseus_lg-0.0.0-py3-none-any.whl](https://github.com/CrispStrobe/greCy/releases/download/v1.0-models/grc_perseus_lg-0.0.0-py3-none-any.whl) --no-deps
+[https://github.com/CrispStrobe/greCy/releases/download/v1.0-models/grc_proiel_sm-0.0.0-py3-none-any.whl](https://github.com/CrispStrobe/greCy/releases/download/v1.0-models/grc_proiel_sm-0.0.0-py3-none-any.whl) --no-deps
+[https://github.com/CrispStrobe/greCy/releases/download/v1.0-models/grc_perseus_sm-0.0.0-py3-none-any.whl](https://github.com/CrispStrobe/greCy/releases/download/v1.0-models/grc_perseus_sm-0.0.0-py3-none-any.whl) --no-deps
+```
+
+**Or, to install a single model from the command line:**
+
+```bash
+pip install [https://github.com/CrispStrobe/greCy/releases/download/v1.0-models/grc_proiel_trf-3.7.5-py3-none-any.whl](https://github.com/CrispStrobe/greCy/releases/download/v1.0-models/grc_proiel_trf-3.7.5-py3-none-any.whl) --no-deps
+```
+
+-----
+
+## Usage
+
+Once installed, you can use the models in any Python script.
+
+```python
+import spacy
+
+# Load the model you installed (using an underscore)
+nlp = spacy.load("grc_proiel_trf")
+
+text = "καὶ πρὶν μὲν ἐν κακοῖσι κειμένην ὅμως ἐλπίς μʼ ἀεὶ προσῆγε σωθέντος τέκνου ἀλκήν τινʼ εὑρεῖN κἀπικούρησιν δόμον"
+
+doc = nlp(text)
+
+print(f"{'Text':<12} | {'Lemma':<12} | {'POS':<7}")
+print("-" * 35)
+for token in doc:
+    print(f'{token.text:<12} | {token.lemma_:<12} | {token.pos_:<7}')
+```
+
+-----
+
+## Developer: Manual Installation (from this repo)
+
+This is an alternative method if you want to build the wheels from scratch.
+
+### 1\. Create a Clean Virtual Environment
 
 ```bash
 # We use conda-forge for current packages
 conda create -n grecy_env -c conda-forge python=3.11
 conda activate grecy_env
-````
+```
 
 ### 2\. Install Base Packages
 
-Install `spaCy` and the (broken) `grecy` installer. We only install `grecy` to get its dependencies.
-
 ```bash
-pip install spacy grecy
+pip install spacy grecy spacy-transformers
 ```
 
 ### 3\. Download and Install the Model
 
-Instead of using the broken `grecy install` command, use the `install_model.py` script provided in this repository.
+Use the `install_model.py` script provided in this repository.
 
 ```bash
 # This script will download the model, cache it, and install it
@@ -37,6 +112,7 @@ python install_model.py grc_proiel_trf
 
   * `grc_proiel_trf` (Recommended)
   * `grc_perseus_trf`
+  * `grc_ner_trf`
   * `grc_proiel_lg`
   * `grc_perseus_lg`
   * `grc_proiel_sm`
@@ -44,36 +120,14 @@ python install_model.py grc_proiel_trf
 
 ### 4\. Validate Your Installation
 
-Use the `test_spacy.py` script (also in this repo) to run a quick capability test and confirm everything is working.
+Use the `test_spacy_modular.py` script (also in this repo) to run a capability test.
 
 ```bash
-python test_spacy.py grc_proiel_trf
+python test_spacy_modular.py grc_proiel_trf
 ```
 
-If the script runs to completion, your installation is successful.
+-----
 
-## Usage
-
-Once installed, you can use the models in any Python script (as long as your `grecy_env` is active).
-
-```python
-import spacy
-
-# Load the model you installed
-nlp = spacy.load("grc_proiel_trf")
-
-text = "καὶ πρὶν μὲν ἐν κακοῖσι κειμένην ὅμως ἐλπίς μʼ ἀεὶ προσῆγε σωθέντος τέκνου ἀλκήν τινʼ εὑρεῖν κἀπικούρησιν δόμον"
-
-doc = nlp(text)
-
-print(f"{'Text':<12} | {'Lemma':<12} | {'POS':<7}")
-print("-" * 35)
-for token in doc:
-    print(f'{token.text:<12} | {token.lemma_:<12} | {token.pos_:<7}')
-```
-
-```
-```
 
 ## Original repo readme info
 

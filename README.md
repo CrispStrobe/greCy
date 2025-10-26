@@ -47,7 +47,7 @@ python install_model.py grc_proiel_trf
 Use the `test_spacy.py` script (also in this repo) to run a quick capability test and confirm everything is working.
 
 ```bash
-python test_spacy.py
+python test_spacy.py grc_proiel_trf
 ```
 
 If the script runs to completion, your installation is successful.

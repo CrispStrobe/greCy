@@ -1,5 +1,81 @@
-# greCy
-## Ancient Greek models for spaCy
+# greCy: Ancient Greek models for spaCy (forked)
+
+This is a fork of [Jacobo/greCy](https://github.com/Jacobo/greCy), which provides Ancient Greek models for spaCy.
+
+The installer in the original `grecy` package was seemingly broken: The `python -m grecy install <model_name>` command fails (probably because it points to outdated URLs on Hugging Face and fails to name the downloaded files correctly, causing `pip` to fail.) This fork provides a fixed, manual installation script.
+
+## Installation
+
+### 1. Create a Clean Virtual Environment
+
+Install in a clean environment to avoid package conflicts, e.g. by using `conda`_
+
+```bash
+# We use conda-forge for current packages
+conda create -n grecy_env -c conda-forge python=3.11
+conda activate grecy_env
+````
+
+### 2\. Install Base Packages
+
+Install `spaCy` and the (broken) `grecy` installer. We only install `grecy` to get its dependencies.
+
+```bash
+pip install spacy grecy
+```
+
+### 3\. Download and Install the Model
+
+Instead of using the broken `grecy install` command, use the `install_model.py` script provided in this repository.
+
+```bash
+# This script will download the model, cache it, and install it
+python install_model.py grc_proiel_trf
+```
+
+**Available models to install:**
+
+  * `grc_proiel_trf` (Recommended)
+  * `grc_perseus_trf`
+  * `grc_proiel_lg`
+  * `grc_perseus_lg`
+  * `grc_proiel_sm`
+  * `grc_perseus_sm`
+
+### 4\. Validate Your Installation
+
+Use the `test_spacy.py` script (also in this repo) to run a quick capability test and confirm everything is working.
+
+```bash
+python test_spacy.py
+```
+
+If the script runs to completion, your installation is successful.
+
+## Usage
+
+Once installed, you can use the models in any Python script (as long as your `grecy_env` is active).
+
+```python
+import spacy
+
+# Load the model you installed
+nlp = spacy.load("grc_proiel_trf")
+
+text = "καὶ πρὶν μὲν ἐν κακοῖσι κειμένην ὅμως ἐλπίς μʼ ἀεὶ προσῆγε σωθέντος τέκνου ἀλκήν τινʼ εὑρεῖν κἀπικούρησιν δόμον"
+
+doc = nlp(text)
+
+print(f"{'Text':<12} | {'Lemma':<12} | {'POS':<7}")
+print("-" * 35)
+for token in doc:
+    print(f'{token.text:<12} | {token.lemma_:<12} | {token.pos_:<7}')
+```
+
+```
+```
+
+## Original repo readme info
 
 greCy is a set of spaCy ancient Greek models and its installer. The models were trained using the [Perseus](https://universaldependencies.org/treebanks/grc_perseus/index.html) and  [Proiel UD](https://universaldependencies.org/treebanks/grc_proiel/index.html) corpora. Prior to installation, the models can be tested on my [Ancient Greek Syntax Analyzer](https://huggingface.co/spaces/Jacobo/syntax) on the [Hugging Face Hub](https://huggingface.co/), where you can also check the various performance metrics of each model.
 
@@ -23,11 +99,7 @@ Once the package is successfully installed, you can proceed to dowload and insta
 * grc_proiel_trf
 
 
-The models can be installed from the terminal with the commands below:
-
-```
-python -m grecy install MODEL
-```
+The models can be installed from the terminal (...) 
 where you replace MODEL by any of the model names listed above.  The suffixes after the corpus name, _sm, _lg, and _trf, indicate the size of the model which directly depends on the word embedding used for training. The smallest models end in _sm (small) and are the less accurate ones: they are good for testing and building lightweight apps. The _lg and _trf are the large and transformers models which are more accurate. The _lg were trained using fasttext word vectors in the spaCy floret version, and the _trf models were trained using a special version of BERT, pertained by ourselves with the largest available Ancient Greek corpus, namely, the TLG.  The vectors for large models were also trained with the TLG corpus.
 
 
@@ -98,8 +170,4 @@ Metrics, however, can be misleading. This becomes particularly obvious when you 
 ### Future Developments
 
 This project was initiated as part of the [Diogenet Project](https://diogenet.ucsd.edu/), a research initiative that focuses on the automatic extraction of social relations from Ancient Greek texts. As part of this project, greCy will add first, in a non distant future,  a NER pipeline for the identification of entities; later I hope also to offer pipeline for the extraction of social relation from Greek texts. This pipeline should contribute to the study of social networks in the ancient world. 
-
-
-
-
 

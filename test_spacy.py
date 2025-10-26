@@ -4,25 +4,35 @@
 Runs a comprehensive 10-point capabilities test on an
 installed greCy spaCy model.
 
-Version 3: Fixes Test 10 for modern spacy-transformers.
+Version 4: Made modular to accept a model name
+as a command-line argument.
 """
 
 import spacy
 import sys
 
 def run_tests():
-    MODEL_TO_TEST = "grc_proiel_trf"
+    # --- MODIFICATION: Get model name from argument ---
+    if len(sys.argv) < 2:
+        print(f"Usage: python {sys.argv[0]} <model_name>", file=sys.stderr)
+        print("Example: python {sys.argv[0]} grc_proiel_trf", file=sys.stderr)
+        sys.exit(1)
+        
+    MODEL_TO_TEST = sys.argv[1]
+    # --- END MODIFICATION ---
 
     # --- 1. Load Model ---
+    print(f"=================================================")
     print(f"--- 1. Loading Model: {MODEL_TO_TEST} ---")
+    print(f"=================================================")
     try:
         nlp = spacy.load(MODEL_TO_TEST)
         print(f"Model loaded successfully.")
         print(f"Pipeline: {nlp.pipe_names}\n")
     except OSError as e:
         print(f"Error: {e}", file=sys.stderr)
-        print(f"\nMake sure you have successfully installed the model.", file=sys.stderr)
-        print(f"Try running: python ./test_dl.py {MODEL_TO_TEST}", file=sys.stderr)
+        print(f"\nModel '{MODEL_TO_TEST}' not found.", file=sys.stderr)
+        print(f"Try running: python install_model.py {MODEL_TO_TEST}", file=sys.stderr)
         sys.exit(1)
     except Exception as e:
         print(f"An unexpected error occurred during model loading: {e}", file=sys.stderr)
@@ -32,7 +42,7 @@ def run_tests():
 
     # --- 2. Basic Tokenization, Lemma & POS ---
     print("--- 2. Token, Lemma, and POS Tagging ---")
-    text = "καὶ πρὶν μὲn ἐν κακοῖσι κειμένην ὅμως ἐλπίς μʼ ἀεὶ προσῆγε σωθέντος τέκνου ἀλκήν τινʼ εὑρεῖν κἀπικούρησιν δόμον"
+    text = "καὶ πρὶn μὲn ἐν κακοῖσι κειμένην ὅμως ἐλπίς μʼ ἀεὶ προσῆγε σωθέντος τέκνου ἀλκήν τινʼ εὑρεῖν κἀπικούρησιν δόμον"
     doc = nlp(text)
     
     print(f"{'Text':<12} | {'Lemma':<12} | {'POS':<7} | {'Fine-Grained Tag':<15}")
@@ -46,7 +56,7 @@ def run_tests():
     print("-" * 65)
     for token in doc:
         if token.pos_ not in ['PUNCT', 'SPACE']:
-            print(f'{token.text:<12} | {token.morph}')
+            print(f'{token.text:<12} | {str(token.morph):<50}')
 
     # --- 4. Syntactic Dependency Parsing ---
     print("\n--- 4. Syntactic Dependency Parsing ---")
@@ -105,9 +115,7 @@ def run_tests():
 
     # --- 9. Word Similarity (Contextual) ---
     print("\n--- 9. Word Similarity (Contextual) ---")
-    print("Note: Similarity warnings (W007, W008) are expected.")
-    print("This model uses context-tensors, not static vectors,")
-    print("so token.similarity() will default to 0.0.")
+    
     token1 = doc[6]  # κειμένην (lying)
     token2 = doc[12] # σωθέντος (saved)
     token3 = doc[13] # τέκνου (child)
@@ -117,6 +125,14 @@ def run_tests():
         sim2_3 = token2.similarity(token3)
         print(f"Similarity between '{token1.text}' and '{token2.text}': {sim1_2:.4f}")
         print(f"Similarity between '{token2.text}' and '{token3.text}': {sim2_3:.4f}")
+        
+        if sim1_2 == 0.0 and 'trf' in MODEL_TO_TEST:
+            print("Note: 0.0 similarity is expected for 'trf' models as they lack static vectors.")
+        elif sim1_2 == 0.0 and 'sm' in MODEL_TO_TEST:
+            print("Note: 0.0 similarity is expected for 'sm' models as they lack static vectors.")
+        elif sim1_2 != 0.0 and 'lg' in MODEL_TO_TEST:
+            print("Note: Non-zero similarity is expected for 'lg' models, which use static vectors.")
+
     except ImportError:
         print("Could not run similarity test: 'numpy' package not found.")
     except Exception as e:
@@ -128,23 +144,19 @@ def run_tests():
         trf_data = doc._.trf_data
         print(f"Transformer data is present.")
         
-        # --- FIX ---
-        # The 'TransformerData' object holds outputs in a list.
-        # The last hidden state is the first element of that list.
         try:
             hidden_state = trf_data.outputs[0]
             print(f"Shape of last hidden state: {hidden_state.shape}")
-            # The pooler output is often the second element
             if len(trf_data.outputs) > 1:
                  pooler_output = trf_data.outputs[1]
                  print(f"Shape of pooler output: {pooler_output.shape}")
         except Exception as e:
             print(f"Could not access transformer output tensors: {e}")
             print(f"Available attributes: {dir(trf_data)}")
-        # --- END FIX ---
             
     else:
         print("Skipping test: Transformer data extension ('_.trf_data') not found.")
+        print("This is normal for 'sm' and 'lg' models.")
 
     print("\n--- All 10 tests complete. ---")
 

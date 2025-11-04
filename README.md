@@ -2,17 +2,94 @@
 
 This is a fork of [Jacobo/greCy](https://github.com/Jacobo/greCy), which provides Ancient Greek models for spaCy.
 
-The installer in the original `grecy` package is broken. This fork provides fixed models, a robust installation script, and a [live Gradio demo](#-live-demo).
+The installer in the original `grecy` package is broken. This fork provides fixed models, a robust installation script, and a [live Gradio demo](https://www.google.com/search?q=%23-live-demo).
 
----
+-----
 
 ## 🚀 Live Demo
 
 You can test the `grc_proiel_trf` and other models live on our Hugging Face Space:
 
-**[https://huggingface.co/spaces/cstr/spacy_de](https://huggingface.co/spaces/cstr/spacy_de)**
+**[https://huggingface.co/spaces/cstr/spacy\_de](https://huggingface.co/spaces/cstr/spacy_de)**
 
----
+### 🎯 API Client Demo (Dart)
+
+This repository also includes `test_spacy_api.dart`, a Dart script for testing the live demo's public API. It serves as a complete, commented example for consuming a streaming Gradio API from a non-Python environment.
+
+**The script demonstrates how to:**
+
+  * Call a Gradio streaming API (the 2-step `POST` for an `event_id` and `GET` for the stream).
+  * Parse the Server-Sent Events (SSE) as they arrive.
+  * Interpret the final JSON and HTML results.
+  * Parse the HTML to extract NER entities and check the status of visualizations.
+  * Display all analysis in a clean, user-friendly table directly in your console.
+
+#### Prerequisites
+
+1.  **Install the Dart SDK** on your system.
+
+2.  Add the `http` package to your `pubspec.yaml` (you may need to create this file if you're not in a full Dart project):
+
+    ```yaml
+    name: grecy_api_test
+
+    environment:
+      sdk: '>=3.0.0 <4.0.0'
+
+    dependencies:
+      http: ^1.2.1 # Or any recent version
+    ```
+
+3.  Run `dart pub get` to install the dependency.
+
+#### Usage
+
+**1. Run the Test:**
+This command will run all 6 tests and print a clean, formatted summary to your console.
+
+```bash
+dart ./test_spacy_api.dart
+```
+
+**Example Console Output:**
+
+```text
+🚀 STARTING TEST (test_1_en): Model=en, Text="Apple is looking..."
+----------------------------------------------------------------------
+✅ STEP 1 (POST) successful. Event ID: ...
+Waiting for stream...
+✅ STEP 2 (Stream "complete") successful.
+
+--- 📊 MORPHOLOGICAL & SYNTACTIC ANALYSIS ---
++---------+---------+-------+-----+----------------------------------+------------+
+| Word    | Lemma   | POS   | Tag | Morphology                       | Dependency |
++=========+=========+=======+=====+==================================+============+
+| Apple   | Apple   | PROPN | NNP | Number=Sing                      | nsubj      |
+| is      | be      | AUX   | VBZ | Mood=Ind|Number=Sing|Person=3...| aux        |
+...
++---------+---------+-------+-----+----------------------------------+------------+
+
+--- 🌳 DEPENDENCY PARSE VISUALIZATION ---
+  ✅ Dependency Parse SVG generated. (Pass --save-visuals to save file)
+
+--- 🏷️ NAMED ENTITY RECOGNITION (NER) ---
+  ✨ Entities Found:
+    • Apple                (ORG)
+    • U.K.                 (GPE)
+    • $1 billion           (MONEY)
+======================================================================
+```
+
+**2. Save Visualizations (Optional):**
+To save the visual dependency parses (as `.svg`) and NER charts (as `.html`), use the `--save-visuals` flag.
+
+```bash
+dart ./test_spacy_api.dart --save-visuals
+```
+
+This will create an `api_results` directory and save the files there for you to open in a browser.
+
+-----
 
 ## Installation (Recommended Method)
 
